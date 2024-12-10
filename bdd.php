@@ -3,8 +3,14 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+
+if (file_exists(__DIR__ . '/.env.local')) {
+    $dotenv = Dotenv::createImmutable(__DIR__, '.env.local');
+    $dotenv->load();
+} else {
+    $dotenv = Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+}
 
 $host_name = $_ENV['DB_HOST'];
 $port = $_ENV['DB_PORT'];

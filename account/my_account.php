@@ -1,7 +1,7 @@
 <?php
-require('../php_require/session.php');
+require_once '../php_require/session.php';
 if (!isset($_SESSION['status'])) {
-    echo '<script>window.location.href="/account/login.php?src=not_allowed";</script>';
+    header('location: /account/login.php?src=not_allowed');
 }
 ?>
 
@@ -12,7 +12,7 @@ if (!isset($_SESSION['status'])) {
 <body>
 
     <?php
-    require('../php_require/navbar.php');
+    require_once '../php_require/navbar.php';
     ?>
 
     <main class="registration-main">
@@ -25,11 +25,11 @@ if (!isset($_SESSION['status'])) {
             <h2>Modifier mon pseudo</h2>
             <div>
                 <label for="password">Mot de passe : </label> <input type="password" id="password" name="password"
-                    required>
+                    require_onced>
             </div>
             <div>
                 <label for="new-pseudo">Nouveau pseudo : </label> <input type="text" id="new-pseudo" name="new-pseudo"
-                    minlength="3" maxlength="30" required>
+                    minlength="3" maxlength="30" require_onced>
             </div>
             <input type="submit" name="pseudo-change" value="Envoyer">
 
@@ -73,49 +73,32 @@ if (!isset($_SESSION['status'])) {
             <h2>Modifier mon mot de passe</h2>
             <div>
                 <label for="password">Mot de passe actuel : </label> <input type="password" id="password"
-                    name="password" required>
+                    name="password" require_onced>
             </div>
             <div>
-                <label for="password1">Nouveau mot de passe : </label> <input type="password" id="password1"
-                    name="password1" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                    title="Au moins 8 caractères dont au moins un chiffre, une minuscule et une majuscule" minlength="8"
-                    required>
-            </div>
-            <div>
-                <label for="password2">Confirmer le mot de passe : </label> <input type="password" id="password2"
-                    name="password2" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                    title="Au moins 8 caractères dont au moins un chiffre, une minuscule et une majuscule" minlength="8"
-                    required>
-            </div>
-            <div>
-                <label class="auto-width" for="no-verif-password">Désactiver l'obligation de mot de passe fort :
-                    <input type="checkbox" id="no-verif-password" name="no-verif-password"></label>
+                <label for="newPassword">Nouveau mot de passe : </label> <input type="password" id="newPassword"
+                    title="Au moins 4 caractères" minlength="4" require_onced>
             </div>
             <input type="submit" name="mdp-change" value="Envoyer">
 
             <?php
             if (isset($_POST['mdp-change'])) {
-                if (isset($_POST['password']) && isset($_POST['password1']) && isset($_POST['password2'])) {
-                    if (strlen($_POST['password1']) >= 8) {
+                if (isset($_POST['password']) && isset($_POST['newPassword'])) {
+                    if (strlen($_POST['newPassword']) >= 4) {
                         $password = $_POST['password'];
-                        $password1 = $_POST['password1'];
-                        $password2 = $_POST['password2'];
+                        $newPassword = $_POST['newPassword'];
 
-                        if ($password1 == $password2) {
+                        $req = $bdd->query("SELECT user_password FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
+                        $response = $req->fetch();
 
-                            $req = $bdd->query("SELECT user_password FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
-                            $response = $req->fetch();
-
-                            if (password_verify($password, $response['user_password'])) {
-                                $hash = password_hash($password1, PASSWORD_BCRYPT);
-                                $req2 = $bdd->query("UPDATE accounts SET user_password = '$hash' WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
-                                echo "<p>Mot de passe changé</p>";
-                            } else {
-                                echo "<p>Mot de passe incorrect</p>";
-                            }
+                        if (password_verify($password, $response['user_password'])) {
+                            $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+                            $req2 = $bdd->query("UPDATE accounts SET user_password = '$hash' WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
+                            echo "<p>Mot de passe changé</p>";
                         } else {
-                            echo "<p>Les mots de passes ne correspondents pas</p>";
+                            echo "<p>Mot de passe incorrect</p>";
                         }
+
                     } else {
                         echo "<p>Veuillez remplir tout les champs</p>";
                     }
@@ -135,13 +118,13 @@ if (!isset($_SESSION['status'])) {
             <h2>Modifier mon adresse email</h2>
             <div>
                 <label for="password">Mot de passe : </label> <input type="password" id="password" name="password"
-                    required>
+                    require_onced>
             </div>
             <div>
                 <label for="new-email">Nouvelle adresse email : </label> <input type="email" id="new-email"
                     name="new-email"
                     pattern="[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([_\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})"
-                    title="L'adresse mail doit être au format 'exemple@exemple.ex'." required>
+                    title="L'adresse mail doit être au format 'exemple@exemple.ex'." require_onced>
             </div>
             <input type="submit" name="email-change" value="Envoyer">
 
@@ -186,8 +169,9 @@ if (!isset($_SESSION['status'])) {
                     $file_size = filesize($_FILES['new-avatar']['tmp_name']);
                     $url = "/account/" . $dossier . $fichier;
 
-                    if ($extension == ".png" || $extension == ".gif") {
-                        if ($file_size < 5000000) {
+                    $allowedExtension = [".png", ".gif"];
+                    if (in_array($extension, $allowedExtension)) {
+                        if ($file_size <= 1_000_000) {
                             if (move_uploaded_file($_FILES['new-avatar']['tmp_name'], $dossier . $fichier)) {
                                 $error_avatar = '<p>Avatar changé</p>';
 
@@ -214,11 +198,11 @@ if (!isset($_SESSION['status'])) {
             ?>
 
             <div>
-                <input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
-                <label for="new-avatar">Importer une image (.png, .gif) de 1Mo maximum : </label>
-                <input type="file" accept="image/png, image/gif" name="new-avatar" id="new-avatar">
+                <label for="avatarFileInput">Importer une image (.png, .gif) de 1Mo maximum : </label>
+                <input type="file" name="new-avatar" id="avatarFileInput" require_onced>
+                <p id="fileError" style="color: red; display: none;">Le fichier est trop lourd.</p>
             </div>
-            <input type="submit" name="avatar-change" value="Envoyer">
+            <input type="submit" name="avatar-change" id="avatarSubmitButton" value="Envoyer" disabled>
             <?php
             if (isset($error_avatar)) {
                 echo $error_avatar;
@@ -233,22 +217,24 @@ if (!isset($_SESSION['status'])) {
         <form action="my_account.php" method="POST">
             <h2>Supprimer mon compte</h2>
             <div>
-                <label for="password">Mot de passe : </label> <input type="password" id="password" name="password"
-                    required>
+                <label for="password">Mot de passe : </label>
+                <input type="password" id="password" name="password" require_onced>
             </div>
             <div>
-                <label class="auto-width" for="password-checkbox">Supprimer mon compte : <input type="checkbox"
-                        id="password-checkbox" name="password-checkbox" required></label>
+                <label class="auto-width" for="deletionConfirmationCheckbox">
+                    Supprimer mon compte : </label>
+                <input type="checkbox" id="deletionConfirmationCheckbox" name="deletionConfirmation" require_onced>
+
             </div>
-            <div id="password-confirm" style="display: none;">
+            <div id="deletionConfirmationInput" style="display: none;">
                 <label for="password-confirm">Entrez "supprimer" : </label> <input type="text" id="password-confirm"
-                    name="password-confirm" required>
+                    name="password-confirm" require_onced>
             </div>
             <input type="submit" name="account-del" value="Envoyer">
 
             <?php
             if (isset($_POST['account-del'])) {
-                if (!empty($_POST['password']) && isset($_POST['password-checkbox']) && isset($_POST['password-confirm'])) {
+                if (!empty($_POST['password']) && isset($_POST['deletionConfirmation']) && isset($_POST['password-confirm'])) {
                     if ($_POST['password-confirm'] == "supprimer") {
 
                         $password = $_POST['password'];
@@ -260,10 +246,11 @@ if (!isset($_SESSION['status'])) {
 
                             $req2 = $bdd->query("DELETE FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "'  ");
                             $req_ren_author_msg = $bdd->query("UPDATE messages_public_chat SET message_author = 'Compte supprimé' WHERE message_author = '" . $_SESSION["pseudo"] . "' ");
+
                             $req_ren_author_msg2 = $bdd->query("UPDATE messages_members_chat SET message_author = 'Compte supprimé' WHERE message_author = '" . $_SESSION["pseudo"] . "' ");
 
                             session_destroy();
-                            echo '<script>window.location.href="/account/login.php?src=deleted-account";</script>';
+                            header('location: /account/login.php?src=deleted-account');
                         } else {
                             echo "<p>Mot de passe incorrect</p>";
                         }
@@ -281,11 +268,8 @@ if (!isset($_SESSION['status'])) {
 
     </main>
     <?php
-    require('../php_require/footer.php');
+    require_once '../php_require/footer.php';
     ?>
 </body>
-
-<script src="/js/jquery.js"></script>
-<script src="/js/script.js"></script>
 
 </html>

@@ -1,13 +1,13 @@
 <footer>
     <nav>
         <ul>
-            <li>
+            <!-- <li>
                 <a href="/changelog.php">Changelog</a>
-            </li>
+            </li> -->
             <li style="padding: 0.5em 0">|</li>
-            <li>
+            <!-- <li>
                 <a href="https://cv.rosedevelopment.fr/" target="_blank">CV</a>
-            </li>
+            </li> -->
         </ul>
     </nav>
 </footer>

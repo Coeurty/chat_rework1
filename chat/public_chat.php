@@ -1,5 +1,5 @@
 <?php
-require('../php_require/session.php');
+require_once '../php_require/session.php';
 ?>
 
 <head>
@@ -19,12 +19,12 @@ require('../php_require/session.php');
             'message_ip' => $ip
         ));
 
-        echo '<script>window.location.href="/index.php?src=public_chat";</script>';
+        header('location: /index.php?src=public_chat');
     }
     ?>
 
     <?php
-    require('../php_require/navbar.php');
+    require_once '../php_require/navbar.php';
     ?>
 
     <main>
@@ -37,9 +37,9 @@ require('../php_require/session.php');
             } else {
                 $lmm_counter = $_POST['lmm_counter'] + 1;
             }
-            $nbr_msg_to_load = $lmm_counter * 20;
+            $nbr_msg_to_load = intval($lmm_counter) * 20;
 
-            $req_message = $bdd->query("SELECT * FROM messages_public_chat ORDER BY ID DESC LIMIT 0," . $nbr_msg_to_load . " ");
+            $req_message = $bdd->query("SELECT * FROM messages_public_chat ORDER BY ID DESC LIMIT " . $nbr_msg_to_load);
 
             $message_load_counter = $req_message->rowCount();
 
@@ -53,10 +53,7 @@ require('../php_require/session.php');
                 $req_account = $bdd->query("SELECT * FROM accounts WHERE user_pseudo = '" . $response_message['message_author'] . "' ");
                 $response_account = $req_account->fetch();
 
-                // setlocale(LC_TIME, 'fr_FR.utf8', 'fra');
-                // $date = strftime('%A %e %B à %H h %M', strtotime($response_message['message_date']));
                 $date = date('d/m/Y \à H\hi', strtotime($response_message['message_date']));
-                // $message = $response_message['message_content']);
                 $message = str_replace(" ", "&nbsp;", $response_message['message_content']);
 
                 $avatar = "";
@@ -70,30 +67,32 @@ require('../php_require/session.php');
                         $addId = 'id="mine"';
                     }
                 }
-            ?>
+                ?>
 
-            <div <?= $addId ?>>
-                <p><?= $date ?></p>
-                <div class="img-pseudo">
-                    <div><?= $avatar ?></div>
-                    <h4><?= $response_message['message_author'] ?></h4>
+                <div <?= $addId ?>>
+                    <p>
+                        <?= $date ?>
+                    </p>
+                    <div class="img-pseudo">
+                        <div><?= $avatar ?></div>
+                        <h4><?= $response_message['message_author'] ?></h4>
+                    </div>
+                    <p><?= nl2br($message) ?></p>
                 </div>
-                <p><?= nl2br($message) ?></p>
-            </div>
 
-            <?php
+                <?php
             }
 
             if ($more_msg) {
-            ?>
-            <form action="public_chat.php#spawn" method="POST">
-                <label for="load-more-msg">
-                    <h4 class="centered underline-hover" style="cursor: pointer;">Charger plus de message</h4>
-                </label>
-                <input type="submit" id="load-more-msg" style="display: none;" name="lmm_counter"
-                    value="<?= $lmm_counter ?>">
-            </form>
-            <?php
+                ?>
+                <form action="public_chat.php#spawn" method="POST">
+                    <label for="load-more-msg">
+                        <h4 class="centered underline-hover" style="cursor: pointer;">Charger plus de message</h4>
+                    </label>
+                    <input type="submit" id="load-more-msg" style="display: none;" name="lmm_counter"
+                        value="<?= $lmm_counter ?>">
+                </form>
+                <?php
             } else {
                 echo "<h4 class='centered'>Il n'y a plus de message à charger</h4>";
             }
@@ -102,7 +101,7 @@ require('../php_require/session.php');
         </section>
         <hr id="spawn">
 
-        <form action="public_chat.php" method="POST">
+        <form method="POST">
             <div>
                 Connecté en tant que <strong><?= $_SESSION['pseudo']; ?></strong>
             </div>
@@ -112,20 +111,16 @@ require('../php_require/session.php');
             }
             ?>
             <div>
-                <label for="message">Message :</label><br>
-                <textarea name="message" id="message" rows="10"></textarea>
+                <textarea name="message" id="message" rows="3"
+                    placeholder='Envoyer un message... ("ENTRER" pour envoyer, "MAJ" + "ENTRER" pour retourner à la ligne)'></textarea>
             </div>
-            <input type="submit" id="submit" name="message_submit" value="Envoyer">
-            <button id="refreshBTN">Actualiser</button>
+            <button id="chatRefreshBtn">Actualiser</button>
         </form>
 
     </main>
     <?php
-    require('../php_require/footer.php');
+    require_once '../php_require/footer.php';
     ?>
 </body>
-
-<script src="/js/jquery.js"></script>
-<script src="/js/script.js"></script>
 
 </html>
