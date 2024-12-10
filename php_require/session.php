@@ -14,18 +14,18 @@ function getIp()
 }
 $ip = getIp();
 
-require_once '../bdd.php';
+require_once __DIR__ . '/../bdd.php';
 
 $bdd = new PDO("mysql:host=$host_name; port=$port; dbname=$database;", $user_name, $password);
 
 if (!isset($_SESSION['pseudo'])) {
-    $findVisitorByIp = $bdd->query("SELECT * FROM visitors WHERE visitor_ip = '$ip'");
+    $findVisitorByIp = $bdd->query("SELECT * FROM visitors WHERE ip = '$ip'");
     $knownVisitor = $findVisitorByIp->fetch();
     if ($knownVisitor) {
-        $_SESSION['pseudo'] = $knownVisitor['visitor_pseudo'];
+        $_SESSION['pseudo'] = $knownVisitor['pseudo'];
     } else {
         $_SESSION['pseudo'] = "visiteur" . rand(1, 100000);
-        $bdd->query("INSERT INTO visitors(visitor_pseudo, visitor_ip) VALUES('" . $_SESSION['pseudo'] . "', '$ip')");
+        $bdd->query("INSERT INTO visitors(pseudo, ip) VALUES('" . $_SESSION['pseudo'] . "', '$ip')");
     }
 }
 

@@ -1,9 +1,4 @@
 <?php
-
-// apcu_store('key', 'Hello World');
-// echo apcu_fetch('key');
-
-
 require_once '../php_require/session.php';
 if (isset($_SESSION['status'])) {
     header('location: /chat/members_chat.php');
@@ -41,18 +36,17 @@ if (isset($_SESSION['status'])) {
                 $pseudo = $_POST['pseudo'];
                 $password = $_POST['password'];
 
-                $findAccountByPseudoRequest = $bdd->query("SELECT * FROM accounts WHERE user_pseudo = '$pseudo'");
+                $findAccountByPseudoRequest = $bdd->query("SELECT * FROM accounts WHERE pseudo = '$pseudo'");
                 $foundAccount = $findAccountByPseudoRequest->fetch();
 
                 if ($foundAccount) {
-                    if (password_verify($password, $foundAccount['user_password'])) {
+                    if (password_verify($password, $foundAccount['password'])) {
 
-                        $req_del_visitor = $bdd->query("DELETE FROM visitors WHERE visitor_ip = '$ip' ");
-                        $req_ren_author_msg_visitor = $bdd->query("UPDATE messages_public_chat SET message_author = '" . $foundAccount['user_pseudo'] . "' WHERE message_author = '" . $_SESSION['pseudo'] . "' ");
+                        $req_del_visitor = $bdd->query("DELETE FROM visitors WHERE ip = '$ip' ");
 
                         $_SESSION['id'] = $foundAccount['user_id'];
-                        $_SESSION['status'] = $foundAccount['user_status'];
-                        $_SESSION['pseudo'] = $foundAccount['user_pseudo'];
+                        $_SESSION['status'] = $foundAccount['status'];
+                        $_SESSION['pseudo'] = $foundAccount['pseudo'];
                         header('location: /chat/members_chat.php#spawn');
                     } else {
                         echo '<p>Identifiant ou mot de passe incorrect</p>';

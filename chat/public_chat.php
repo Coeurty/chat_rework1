@@ -1,5 +1,9 @@
 <?php
 require_once '../php_require/session.php';
+if (!function_exists('apcu_enabled') || !apcu_enabled()) {
+    header('Location: /account/login.php');
+    exit();
+}
 ?>
 
 <head>
@@ -7,18 +11,31 @@ require_once '../php_require/session.php';
 </head>
 
 <body>
-
     <?php
+    // TODO: apcu utilise la ram => limiter taille des messages, nb messages stockés, nb messages envoyables
+    function getPublicChatMessages(): array
+    {
+        $messages = apcu_fetch("publicChatMessages") ?: [];
+        usort($messages, function ($a, $b) {
+            return strtotime($a["date"]) - strtotime($b["date"]);
+        });
+        return array_reverse($messages);
+    }
+
+    function addMessage($newMessage): void
+    {
+        $messages = getPublicChatMessages();
+        $messages[] = $newMessage;
+        apcu_store("publicChatMessages", $messages);
+    }
+
     if (isset($_SESSION['pseudo']) && !empty($_SESSION['pseudo']) && isset($_POST['message']) && !empty($_POST['message'])) {
-
-        $req = $bdd->prepare('INSERT INTO messages_public_chat(message_author, message_content, message_date, message_ip) VALUES(:message_author, :message_content, :message_date, :message_ip)');
-        $req->execute(array(
-            'message_author' => $_SESSION['pseudo'],
-            'message_content' => htmlspecialchars($_POST['message']),
-            'message_date' => date("Y-m-d H:i:s"),
-            'message_ip' => $ip
-        ));
-
+        $newMessage = [
+            'author' => $_SESSION['pseudo'],
+            'content' => htmlspecialchars($_POST['message']),
+            'date' => date("Y-m-d H:i:s")
+        ];
+        addMessage($newMessage);
         header('location: /index.php?src=public_chat');
     }
     ?>
@@ -30,71 +47,37 @@ require_once '../php_require/session.php';
     <main>
         <h1>Chat public</h1>
         <section id="chat">
-
             <?php
-            if (!isset($_POST['lmm_counter'])) {
-                $lmm_counter = 1;
-            } else {
-                $lmm_counter = $_POST['lmm_counter'] + 1;
-            }
-            $nbr_msg_to_load = intval($lmm_counter) * 20;
+            foreach (getPublicChatMessages() as $response_message) {
+                $findAccount = $bdd->query("SELECT * FROM accounts WHERE pseudo = '" . $response_message['author'] . "' ");
+                $foundAccount = $findAccount->fetch();
 
-            $req_message = $bdd->query("SELECT * FROM messages_public_chat ORDER BY ID DESC LIMIT " . $nbr_msg_to_load);
-
-            $message_load_counter = $req_message->rowCount();
-
-            $more_msg = true;
-            if ($message_load_counter < $nbr_msg_to_load) {
-                $more_msg = false;
-            };
-
-            while ($response_message = $req_message->fetch()) {
-
-                $req_account = $bdd->query("SELECT * FROM accounts WHERE user_pseudo = '" . $response_message['message_author'] . "' ");
-                $response_account = $req_account->fetch();
-
-                $date = date('d/m/Y \à H\hi', strtotime($response_message['message_date']));
-                $message = str_replace(" ", "&nbsp;", $response_message['message_content']);
+                $date = date('d/m/Y \à H\hi', strtotime($response_message['date']));
+                $message = str_replace(" ", "&nbsp;", $response_message['content']);
 
                 $avatar = "";
-                if ($response_account['user_avatar']) {
-                    $avatar = "<img class='mini-avatar' src='" . $response_account['user_avatar'] . "'>";
+                if ($foundAccount && $foundAccount['avatar']) {
+                    $avatar = "<img class='mini-avatar' src='" . $foundAccount['avatar'] . "'>";
                 }
 
-                $addId = "";
-                if (isset($_SESSION['pseudo'])) {
-                    if ($response_message['message_author'] == $_SESSION['pseudo']) {
-                        $addId = 'id="mine"';
-                    }
+                $userMessageClass = "";
+                if (isset($_SESSION['pseudo']) && $_SESSION['pseudo'] == $response_message['author']) {
+                    $userMessageClass = "user-message";
                 }
                 ?>
 
-                <div <?= $addId ?>>
+                <div class="<?= $userMessageClass ?>">
                     <p>
                         <?= $date ?>
                     </p>
                     <div class="img-pseudo">
                         <div><?= $avatar ?></div>
-                        <h4><?= $response_message['message_author'] ?></h4>
+                        <h4><?= $response_message['author'] ?></h4>
                     </div>
                     <p><?= nl2br($message) ?></p>
                 </div>
 
                 <?php
-            }
-
-            if ($more_msg) {
-                ?>
-                <form action="public_chat.php#spawn" method="POST">
-                    <label for="load-more-msg">
-                        <h4 class="centered underline-hover" style="cursor: pointer;">Charger plus de message</h4>
-                    </label>
-                    <input type="submit" id="load-more-msg" style="display: none;" name="lmm_counter"
-                        value="<?= $lmm_counter ?>">
-                </form>
-                <?php
-            } else {
-                echo "<h4 class='centered'>Il n'y a plus de message à charger</h4>";
             }
             ?>
 

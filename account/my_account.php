@@ -39,16 +39,15 @@ if (!isset($_SESSION['status'])) {
                     $password = $_POST['password'];
                     $pseudo = $_POST['new-pseudo'];
 
-                    $req = $bdd->query("SELECT user_password FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
+                    $req = $bdd->query("SELECT password FROM accounts WHERE pseudo = '" . $_SESSION["pseudo"] . "' ");
                     $response = $req->fetch();
-                    if (password_verify($password, $response['user_password'])) {
+                    if (password_verify($password, $response['password'])) {
 
-                        $req = $bdd->query("SELECT user_pseudo FROM accounts WHERE user_pseudo = '$pseudo'");
+                        $req = $bdd->query("SELECT pseudo FROM accounts WHERE pseudo = '$pseudo'");
                         $verif = $req->fetch();
                         if (!$verif) {
-                            $req2 = $bdd->query("UPDATE accounts SET user_pseudo = '$pseudo' WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
-                            $req_ren_author_msg_public = $bdd->query("UPDATE messages_public_chat SET message_author = '$pseudo' WHERE message_author = '" . $_SESSION['pseudo'] . "' ");
-                            $req_ren_author_msg_members = $bdd->query("UPDATE messages_members_chat SET message_author = '$pseudo' WHERE message_author = '" . $_SESSION['pseudo'] . "' ");
+                            $req2 = $bdd->query("UPDATE accounts SET pseudo = '$pseudo' WHERE pseudo = '" . $_SESSION["pseudo"] . "' ");
+                            $req_ren_author_msg_members = $bdd->query("UPDATE messages_members_chat SET author = '$pseudo' WHERE author = '" . $_SESSION['pseudo'] . "' ");
                             echo "<p>Pseudo changé</p>";
                             $_SESSION['pseudo'] = $pseudo;
                         } else {
@@ -88,12 +87,12 @@ if (!isset($_SESSION['status'])) {
                         $password = $_POST['password'];
                         $newPassword = $_POST['newPassword'];
 
-                        $req = $bdd->query("SELECT user_password FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
+                        $req = $bdd->query("SELECT password FROM accounts WHERE pseudo = '" . $_SESSION["pseudo"] . "' ");
                         $response = $req->fetch();
 
-                        if (password_verify($password, $response['user_password'])) {
+                        if (password_verify($password, $response['password'])) {
                             $hash = password_hash($newPassword, PASSWORD_BCRYPT);
-                            $req2 = $bdd->query("UPDATE accounts SET user_password = '$hash' WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
+                            $req2 = $bdd->query("UPDATE accounts SET password = '$hash' WHERE pseudo = '" . $_SESSION["pseudo"] . "' ");
                             echo "<p>Mot de passe changé</p>";
                         } else {
                             echo "<p>Mot de passe incorrect</p>";
@@ -134,11 +133,11 @@ if (!isset($_SESSION['status'])) {
                     if (filter_var($_POST['new-email'], FILTER_VALIDATE_EMAIL)) {
                         $email = $_POST['new-email'];
 
-                        $req = $bdd->query("SELECT user_password FROM accounts WHERE user_pseudo = '" . $_SESSION['pseudo'] . "' ");
+                        $req = $bdd->query("SELECT password FROM accounts WHERE pseudo = '" . $_SESSION['pseudo'] . "' ");
                         $response = $req->fetch();
 
-                        if (password_verify($_POST['password'], $response['user_password'])) {
-                            $req2 = $bdd->query("UPDATE accounts SET user_email = '$email' WHERE user_pseudo = '" . $_SESSION['pseudo'] . "' ");
+                        if (password_verify($_POST['password'], $response['password'])) {
+                            $req2 = $bdd->query("UPDATE accounts SET email = '$email' WHERE pseudo = '" . $_SESSION['pseudo'] . "' ");
                             echo "<p>Adresse email changée</p>";
                         } else {
                             echo "<p>Mot de passe incorrect</p>";
@@ -175,7 +174,7 @@ if (!isset($_SESSION['status'])) {
                             if (move_uploaded_file($_FILES['new-avatar']['tmp_name'], $dossier . $fichier)) {
                                 $error_avatar = '<p>Avatar changé</p>';
 
-                                $req = $bdd->query("UPDATE accounts SET user_avatar = '$url' WHERE user_pseudo = '" . $_SESSION['pseudo'] . "' ");
+                                $req = $bdd->query("UPDATE accounts SET avatar = '$url' WHERE pseudo = '" . $_SESSION['pseudo'] . "' ");
                             } else {
                                 $error_avatar = '<p>Echec de l\'envoie du fichier</p>';
                             }
@@ -190,10 +189,10 @@ if (!isset($_SESSION['status'])) {
             ?>
 
             <?php
-            $req = $bdd->query("SELECT user_avatar FROM accounts WHERE user_pseudo = '" . $_SESSION['pseudo'] . "' ");
+            $req = $bdd->query("SELECT avatar FROM accounts WHERE pseudo = '" . $_SESSION['pseudo'] . "' ");
             $response = $req->fetch();
-            if ($response['user_avatar']) {
-                echo "<div><img class='avatar' src='" . $response['user_avatar'] . "'></div>";
+            if ($response['avatar']) {
+                echo "<div><img class='avatar' src='" . $response['avatar'] . "'></div>";
             }
             ?>
 
@@ -239,15 +238,14 @@ if (!isset($_SESSION['status'])) {
 
                         $password = $_POST['password'];
 
-                        $req = $bdd->query("SELECT user_password FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "' ");
+                        $req = $bdd->query("SELECT password FROM accounts WHERE pseudo = '" . $_SESSION["pseudo"] . "' ");
                         $response = $req->fetch();
 
-                        if (password_verify($password, $response['user_password'])) {
+                        if (password_verify($password, $response['password'])) {
 
-                            $req2 = $bdd->query("DELETE FROM accounts WHERE user_pseudo = '" . $_SESSION["pseudo"] . "'  ");
-                            $req_ren_author_msg = $bdd->query("UPDATE messages_public_chat SET message_author = 'Compte supprimé' WHERE message_author = '" . $_SESSION["pseudo"] . "' ");
+                            $req2 = $bdd->query("DELETE FROM accounts WHERE pseudo = '" . $_SESSION["pseudo"] . "'  ");
 
-                            $req_ren_author_msg2 = $bdd->query("UPDATE messages_members_chat SET message_author = 'Compte supprimé' WHERE message_author = '" . $_SESSION["pseudo"] . "' ");
+                            $req_ren_author_msg2 = $bdd->query("UPDATE messages_members_chat SET author = 'Compte supprimé' WHERE author = '" . $_SESSION["pseudo"] . "' ");
 
                             session_destroy();
                             header('location: /account/login.php?src=deleted-account');

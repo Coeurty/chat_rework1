@@ -50,14 +50,14 @@ if (isset($_SESSION['status'])) {
                     }
                 }
 
-                $findAccountByPseudoRequest = $bdd->query("SELECT user_pseudo FROM accounts WHERE user_pseudo = '$pseudo'");
+                $findAccountByPseudoRequest = $bdd->query("SELECT pseudo FROM accounts WHERE pseudo = '$pseudo'");
                 $foundAccountByPseudo = $findAccountByPseudoRequest->fetch();
                 if ($foundAccountByPseudo) {
                     echo '<p>Pseudo déjà utilisé</p>';
                     $isRegistrationValid = false;
                 } else {
                     if ($email != "") {
-                        $findAccountByEmailRequest = $bdd->query("SELECT user_email FROM accounts WHERE user_email = '$email'");
+                        $findAccountByEmailRequest = $bdd->query("SELECT email FROM accounts WHERE email = '$email'");
                         $foundAccountByEmail = $findAccountByEmailRequest->fetch();
                         if ($foundAccountByEmail) {
                             echo '<p>Adresse mail déjà utilisée</p>';
@@ -71,16 +71,15 @@ if (isset($_SESSION['status'])) {
                 }
                 if ($isRegistrationValid) {
                     $hash = password_hash($_POST['password'], PASSWORD_BCRYPT);
-                    $req3 = $bdd->prepare('INSERT INTO accounts(user_pseudo,  user_password, user_email, user_ip) VALUES(:user_pseudo, :user_password, :user_email, :user_ip)');
+                    $req3 = $bdd->prepare('INSERT INTO accounts(pseudo,  password, email, ip) VALUES(:pseudo, :password, :email, :ip)');
                     $req3->execute(array(
-                        'user_pseudo' => $pseudo,
-                        'user_password' => $hash,
-                        'user_email' => $email,
-                        'user_ip' => $ip
+                        'pseudo' => $pseudo,
+                        'password' => $hash,
+                        'email' => $email,
+                        'ip' => $ip
                     ));
 
-                    $req_del_visitor = $bdd->query("DELETE FROM visitors WHERE visitor_ip = '$ip' ");
-                    $req_ren_author_msg_visitor = $bdd->query("UPDATE messages_public_chat SET message_author = '$pseudo' WHERE message_author = '" . $_SESSION['pseudo'] . "' ");
+                    $req_del_visitor = $bdd->query("DELETE FROM visitors WHERE ip = '$ip' ");
 
                     header('location: /account/login.php?src=registration');
                 }

@@ -25,9 +25,9 @@ if (isset($_GET['pseudo']) && !empty($_GET['pseudo'])) {
 }
 
 $findAccountByPseudo = $bdd->prepare(
-    "SELECT user_pseudo, user_avatar 
+    "SELECT pseudo, avatar 
             FROM accounts
-            WHERE user_pseudo = :pseudo"
+            WHERE pseudo = :pseudo"
 );
 $findAccountByPseudo->execute(["pseudo" => $pseudo]);
 $foundAccount = $findAccountByPseudo->fetch();
@@ -60,10 +60,10 @@ if (!$foundAccount) {
                 <?= $pseudo ?>
             </h1>
             <?php
-            if ($foundAccount['user_avatar']) {
-                echo "<div><img class='avatar' src='" . $foundAccount["user_avatar"] . "'></div>";
+            if ($foundAccount['avatar']) {
+                echo "<div><img class='avatar' src='" . $foundAccount["avatar"] . "'></div>";
             }
-            if ($foundAccount["user_pseudo"] !== $_SESSION["pseudo"]) {
+            if ($foundAccount["pseudo"] !== $_SESSION["pseudo"]) {
                 ?>
                 <form method="post">
                     <input type="hidden" name="pseudo" value="<?= $pseudo ?>">

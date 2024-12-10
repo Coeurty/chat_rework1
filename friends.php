@@ -26,7 +26,7 @@ if (!isset($_SESSION['status'])) {
                         JOIN accounts AS A
                         ON A.user_id = R.requester
                         WHERE R.receiver = :receiver_id
-                          AND A.user_pseudo = :requester_pseudo
+                          AND A.pseudo = :requester_pseudo
                           AND R.is_accepted = 0;"
             );
             $checkRequest->execute([
@@ -64,7 +64,7 @@ if (!isset($_SESSION['status'])) {
         }
 
         $getPendingFriendRequests = $bdd->prepare(
-            "SELECT A.user_pseudo
+            "SELECT A.pseudo
                     FROM relations as R
                     JOIN accounts as A
                     ON A.user_id = R.requester
@@ -75,7 +75,7 @@ if (!isset($_SESSION['status'])) {
         if ($pendingFriends) {
             echo "<ul>";
             foreach ($pendingFriends as $pendingFriend) {
-                $pendingFriendPseudo = $pendingFriend['user_pseudo'];
+                $pendingFriendPseudo = $pendingFriend['pseudo'];
                 ?>
                 <form method="POST">
                     <li style="display: flex;">
@@ -108,7 +108,7 @@ if (!isset($_SESSION['status'])) {
 
         <?php
         if (isset($_POST['new-friend']) && isset($_POST['newFriendPseudo'])) {
-            $findAccountByPseudo = $bdd->prepare('SELECT user_id FROM accounts WHERE user_pseudo = :pseudo');
+            $findAccountByPseudo = $bdd->prepare('SELECT user_id FROM accounts WHERE pseudo = :pseudo');
             $findAccountByPseudo->execute(['pseudo' => $_POST['newFriendPseudo']]);
             $foundAccount = $findAccountByPseudo->fetch();
 

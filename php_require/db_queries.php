@@ -14,7 +14,7 @@ function getFriendRequestNumber(PDO $bdd, $userId)
 function isFriendByPseudo(PDO $bdd, $userId, $pseudo): bool
 {
     $findAccountIdByPseudo = $bdd->prepare(
-        "SELECT user_id FROM accounts WHERE user_pseudo = :pseudo"
+        "SELECT user_id FROM accounts WHERE pseudo = :pseudo"
     );
     $findAccountIdByPseudo->execute(["pseudo" => $pseudo,]);
     $foundAccount = $findAccountIdByPseudo->fetch();
@@ -34,7 +34,7 @@ function isFriendByPseudo(PDO $bdd, $userId, $pseudo): bool
 function removeFriend(PDO $bdd, $userId, $pseudo)
 {
     $findAccountIdByPseudo = $bdd->prepare(
-        "SELECT user_id FROM accounts WHERE user_pseudo = :pseudo"
+        "SELECT user_id FROM accounts WHERE pseudo = :pseudo"
     );
     $findAccountIdByPseudo->execute(["pseudo" => $pseudo,]);
     $foundAccount = $findAccountIdByPseudo->fetch();
@@ -51,7 +51,7 @@ function removeFriend(PDO $bdd, $userId, $pseudo)
 
 function createFriendRequest(PDO $bdd, $userId, $pseudo)
 {
-    $findAccountByPseudo = $bdd->prepare('SELECT user_id FROM accounts WHERE user_pseudo = :pseudo');
+    $findAccountByPseudo = $bdd->prepare('SELECT user_id FROM accounts WHERE pseudo = :pseudo');
     $findAccountByPseudo->execute(['pseudo' => $pseudo]);
     $foundAccount = $findAccountByPseudo->fetch();
 

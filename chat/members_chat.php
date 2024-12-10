@@ -14,12 +14,12 @@ if (!isset($_SESSION['status'])) {
     <?php
     if (isset($_SESSION['pseudo']) && !empty($_POST['message'])) {
 
-        $req = $bdd->prepare('INSERT INTO messages_members_chat(message_author, message_content, message_date, message_ip) VALUES(:message_author, :message_content, :message_date, :message_ip)');
+        $req = $bdd->prepare('INSERT INTO messages_members_chat(author, content, date, ip) VALUES(:author, :content, :date, :ip)');
         $req->execute(array(
-            'message_author' => $_SESSION['pseudo'],
-            'message_content' => htmlspecialchars($_POST['message']),
-            'message_date' => date("Y-m-d H:i:s"),
-            'message_ip' => $ip
+            'author' => $_SESSION['pseudo'],
+            'content' => htmlspecialchars($_POST['message']),
+            'date' => date("Y-m-d H:i:s"),
+            'ip' => $ip
         ));
 
         header('location: /index.php?src=members_chat');
@@ -49,37 +49,34 @@ if (!isset($_SESSION['status'])) {
             $more_msg = true;
             if ($message_load_counter < $nbr_msg_to_load) {
                 $more_msg = false;
-            }
-            ;
+            };
 
             while ($response_message = $req_message->fetch()) {
 
-                $req_account = $bdd->query("SELECT * FROM accounts WHERE user_pseudo = '" . $response_message['message_author'] . "' ");
+                $req_account = $bdd->query("SELECT * FROM accounts WHERE pseudo = '" . $response_message['author'] . "' ");
                 $response_account = $req_account->fetch();
 
-                $date = date('d/m/Y \à H\hi', strtotime($response_message['message_date']));
-                $message = str_replace(" ", "&nbsp;", $response_message['message_content']);
+                $date = date('d/m/Y \à H\hi', strtotime($response_message['date']));
+                $message = str_replace(" ", "&nbsp;", $response_message['content']);
 
                 $avatar = "";
-                if ($response_account['user_avatar']) {
-                    $avatar = "<img class='mini-avatar' src='" . $response_account['user_avatar'] . "'>";
+                if ($response_account && $response_account['avatar']) {
+                    $avatar = "<img class='mini-avatar' src='" . $response_account['avatar'] . "'>";
                 }
 
-                $addId = "";
-                if (isset($_SESSION['pseudo'])) {
-                    if ($response_message['message_author'] == $_SESSION['pseudo']) {
-                        $addId = 'id="mine"';
-                    }
+                $userMessageClass = "";
+                if ($response_message['author'] == $_SESSION['pseudo']) {
+                    $userMessageClass = "user-message";
                 }
                 ?>
 
-                <div <?= $addId ?>>
+                <div class="<?= $userMessageClass ?>">
                     <p><?= $date ?></p>
                     <div class="img-pseudo">
                         <div><?= $avatar ?></div>
                         <h4>
-                            <a href="<?= "/profil.php?pseudo=" . $response_message['message_author'] ?>">
-                                <?= $response_message['message_author'] ?>
+                            <a href="<?= "/profil.php?pseudo=" . $response_message['author'] ?>">
+                                <?= $response_message['author'] ?>
                             </a>
                         </h4>
                     </div>

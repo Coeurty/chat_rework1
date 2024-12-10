@@ -4,7 +4,12 @@
                 alt="Ouvrir le menu hamburger"></label>
         <input type="checkbox" id="checkboxMenu">
         <ul>
-            <li><a href="/chat/public_chat.php#spawn">Chat public</a></li>
+
+            <?php
+            if (function_exists('apcu_enabled') && apcu_enabled()) {
+                echo '<li><a href="/chat/public_chat.php#spawn">Chat public</a></li>';
+            }
+            ?>
 
             <?php
             require_once 'db_queries.php';
@@ -34,7 +39,8 @@
             ?>
             <li>
                 <label for="checkboxMenu">
-                    <img id="btnCloseMenu" src="/assets/images/icons/hamburgerMenuClose.png" alt="Fermer le menu hamburger">
+                    <img id="btnCloseMenu" src="/assets/images/icons/hamburgerMenuClose.png"
+                        alt="Fermer le menu hamburger">
                 </label>
             </li>
         </ul>
