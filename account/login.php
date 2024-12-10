@@ -1,7 +1,12 @@
 <?php
-require('../php_require/session.php');
+
+// apcu_store('key', 'Hello World');
+// echo apcu_fetch('key');
+
+
+require_once '../php_require/session.php';
 if (isset($_SESSION['status'])) {
-    echo '<script>window.location.href="/index.php";</script>';
+    header('location: /chat/members_chat.php');
 }
 ?>
 
@@ -12,59 +17,43 @@ if (isset($_SESSION['status'])) {
 <body>
 
     <?php
-    require('../php_require/navbar.php');
+    require_once '../php_require/navbar.php';
     ?>
 
     <main class="registration-main">
         <h1>Connexion</h1>
         <form action="login.php" method="POST">
             <div>
-                <label for="pseudo">Pseudo : </label> <input type="text" id="pseudo" name="pseudo">
+                <label for="pseudo">Pseudo : </label>
+                <input type="text" id="pseudo" name="pseudo" autocomplete="username" require_onced>
             </div>
             <div>
-                <label for="password">Mot de passe : </label> <input type="password" id="password" name="password">
+                <label for="password">Mot de passe : </label>
+                <input type="password" id="password" name="password" autocomplete="current-password" require_onced>
             </div>
-            <!-- <div class="g-recaptcha" data-sitekey="6LdFIq4ZAAAAAArO_eQGyw6WB2SFxyWmbA1kOEma"></div> -->
             <input type="submit" name="login_submit" id="login_submit" value="Envoyer">
-            <!-- pseudo = adminadmin
-            mdp = mdpMDP0% -->
         </form>
 
         <?php
         if (isset($_POST['login_submit'])) {
-            // if (isset($_POST['g-recaptcha-response'])) {
-            //     $captcha = $_POST['g-recaptcha-response'];
-            // }
-            // if (!$captcha) {
-            //     echo '<p>Veuillez vérifier le captcha</p>';
-            //     exit;
-            // }
-            // $secretKey = "6LdFIq4ZAAAAANawhSp6Jx-ROm7DBk6C0z78bm2u";
-            // $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . urlencode($secretKey) .  '&response=' . urlencode($captcha);
-            // $response = file_get_contents($url);
-            // $responseKeys = json_decode($response, true);
-            // if ($responseKeys["success"]) {
             if (isset($_POST['pseudo']) && !empty($_POST['pseudo']) && isset($_POST['password']) && !empty($_POST['password'])) {
 
                 $pseudo = $_POST['pseudo'];
                 $password = $_POST['password'];
 
-                if ($pseudo == 'adminadmin' && $password == 'mdpMDP0%') {
-                    echo '<script>window.location.href="https://rickrolled.fr/rickroll.mp4";</script>';
-                }
+                $findAccountByPseudoRequest = $bdd->query("SELECT * FROM accounts WHERE user_pseudo = '$pseudo'");
+                $foundAccount = $findAccountByPseudoRequest->fetch();
 
-                $req = $bdd->query("SELECT * FROM accounts WHERE user_pseudo = '$pseudo'");
-                $response = $req->fetch();
-
-                if ($response) {
-                    if (password_verify($password, $response['user_password'])) {
+                if ($foundAccount) {
+                    if (password_verify($password, $foundAccount['user_password'])) {
 
                         $req_del_visitor = $bdd->query("DELETE FROM visitors WHERE visitor_ip = '$ip' ");
-                        $req_ren_author_msg_visitor = $bdd->query("UPDATE messages_public_chat SET message_author = '" . $response['user_pseudo'] . "' WHERE message_author = '" . $_SESSION['pseudo'] . "' ");
+                        $req_ren_author_msg_visitor = $bdd->query("UPDATE messages_public_chat SET message_author = '" . $foundAccount['user_pseudo'] . "' WHERE message_author = '" . $_SESSION['pseudo'] . "' ");
 
-                        $_SESSION['status'] = $response['user_status'];
-                        $_SESSION['pseudo'] = $response['user_pseudo'];
-                        echo '<script>window.location.href="/chat/members_chat.php#spawn";</script>';
+                        $_SESSION['id'] = $foundAccount['user_id'];
+                        $_SESSION['status'] = $foundAccount['user_status'];
+                        $_SESSION['pseudo'] = $foundAccount['user_pseudo'];
+                        header('location: /chat/members_chat.php#spawn');
                     } else {
                         echo '<p>Identifiant ou mot de passe incorrect</p>';
                     }
@@ -74,9 +63,6 @@ if (isset($_SESSION['status'])) {
             } else {
                 echo '<p>Saisissez un identifiant et un mot de passe</p>';
             }
-            // } else {
-            //     echo '<p>Vous êtes un bot</p>';
-            // }
         }
         if (isset($_GET['src'])) {
             if ($_GET['src'] == "registration") {
@@ -94,11 +80,8 @@ if (isset($_SESSION['status'])) {
     </main>
 
     <?php
-    require('../php_require/footer.php');
+    require_once '../php_require/footer.php';
     ?>
-
 </body>
-<script src="/js/jquery.js"></script>
-<script src="/js/script.js"></script>
 
 </html>

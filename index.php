@@ -1,11 +1,11 @@
 <?php
 if (isset($_GET['src'])) {
     if ($_GET['src'] == "members_chat") {
-        echo '<script>window.location.href="./chat/members_chat.php#spawn";</script>';
+        header('location: /chat/members_chat.php#spawn');
     }
     if ($_GET['src'] == "public_chat") {
-        echo '<script>window.location.href="./chat/public_chat.php#spawn";</script>';
+        header('location: /chat/public_chat.php#spawn');
     }
 } else {
-    echo '<script>window.location.href="./home.php";</script>';
+    header('location: /account/login.php');
 }

@@ -14,23 +14,18 @@ function getIp()
 }
 $ip = getIp();
 
-require('bdd.php');
+require_once '../bdd.php';
 
-try {
-    $bdd = new PDO("mysql:host=$host_name; dbname=$database;", $user_name, $password);
-} catch (PDOException $e) {
-    echo "Erreur!: " . $e->getMessage() . "<br/>";
-    die();
-}
+$bdd = new PDO("mysql:host=$host_name; port=$port; dbname=$database;", $user_name, $password);
 
 if (!isset($_SESSION['pseudo'])) {
-    $req = $bdd->query("SELECT * FROM visitors WHERE visitor_ip = '$ip'");
-    $verif = $req->fetch();
-    if ($verif) {
-        $_SESSION['pseudo'] = $verif['visitor_pseudo'];
+    $findVisitorByIp = $bdd->query("SELECT * FROM visitors WHERE visitor_ip = '$ip'");
+    $knownVisitor = $findVisitorByIp->fetch();
+    if ($knownVisitor) {
+        $_SESSION['pseudo'] = $knownVisitor['visitor_pseudo'];
     } else {
         $_SESSION['pseudo'] = "visiteur" . rand(1, 100000);
-        $req2 = $bdd->query("INSERT INTO visitors(visitor_pseudo, visitor_ip) VALUES('" . $_SESSION['pseudo'] . "', '$ip')");
+        $bdd->query("INSERT INTO visitors(visitor_pseudo, visitor_ip) VALUES('" . $_SESSION['pseudo'] . "', '$ip')");
     }
 }
 
@@ -41,5 +36,6 @@ if (!isset($_SESSION['pseudo'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link id="style" rel="stylesheet" href="<?= $_SESSION['cssChoice'] ?>">
+    <link id="style" rel="stylesheet" href="../assets/css/style.css">
+    <script defer src="../assets/js/script.js"></script>
 </head>
